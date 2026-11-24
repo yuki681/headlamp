@@ -12,6 +12,7 @@ on:
       - main
       - rc-*
       - testing-rc-*
+  workflow_dispatch:
 
 permissions:
   contents: read
