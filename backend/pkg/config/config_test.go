@@ -1199,7 +1199,13 @@ func TestMakeKubeConfigsDir(t *testing.T) {
 
 		dir, err := config.MakeKubeConfigsDir("")
 		require.NoError(t, err)
-		assert.Contains(t, dir, filepath.Join("Headlamp", "kubeconfigs"))
+
+		expectedSuffix := filepath.Join("Headlamp", "kubeconfigs")
+		if runtime.GOOS == "windows" {
+			expectedSuffix = filepath.Join("Headlamp", "Config", "kubeconfigs")
+		}
+
+		assert.True(t, strings.HasSuffix(dir, expectedSuffix), "unexpected kubeconfig directory: %s", dir)
 	})
 
 	t.Run("falls back to the executable directory", func(t *testing.T) {

@@ -36,10 +36,6 @@ import (
 
 //nolint:funlen // Integration test function covering file watcher events across multiple kubeconfigs.
 func TestWatchAndLoadFiles(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != "true" {
-		t.Skip("skipping integration test")
-	}
-
 	paths := []string{"./test_data/kubeconfig1", "./test_data/kubeconfig2"}
 
 	var path string
@@ -144,10 +140,6 @@ func TestWatchAndLoadFiles(t *testing.T) {
 //
 //nolint:funlen // Integration test covering the full watch -> remove -> sync flow.
 func TestWatchFileRemovalRemovesContexts(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != "true" {
-		t.Skip("skipping integration test")
-	}
-
 	src, err := os.ReadFile("./test_data/kubeconfig1")
 	require.NoError(t, err)
 
