@@ -54,10 +54,6 @@ func GetDefaultKubeConfigPath(t *testing.T) string {
 func GetClient(t *testing.T, clusterName string) clientcmd.ClientConfig {
 	t.Helper()
 
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != "true" {
-		t.Skip("skipping integration test")
-	}
-
 	if os.Getenv("HEADLAMP_RUN_CLUSTER_TESTS") != "true" {
 		t.Skip("skipping test requiring a running Kubernetes cluster")
 	}

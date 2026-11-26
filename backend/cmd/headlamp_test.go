@@ -607,10 +607,6 @@ func TestGetConfigOmitsAdminSettingsWhenUnset(t *testing.T) {
 
 //nolint:gocognit,funlen // Integration test executes full dynamic cluster lifecycle
 func TestDynamicClusters(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != "true" {
-		t.Skip("skipping integration test")
-	}
-
 	server := httptest.NewTLSServer(http.NotFoundHandler())
 	t.Cleanup(server.Close)
 	caData := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: server.Certificate().Raw})
@@ -4701,13 +4697,9 @@ func setEnvForTest(t *testing.T, key, value string) func() {
 }
 
 // TestCacheMiddleware_CacheHitAndCacheMiss_RealK8s tests cache hit/miss with a
-// real Kubernetes API server (e.g. minikube). Requires HEADLAMP_RUN_INTEGRATION_TESTS=true
-// and HEADLAMP_RUN_CLUSTER_TESTS=true with a running cluster.
+// real Kubernetes API server (e.g. minikube). Requires HEADLAMP_RUN_CLUSTER_TESTS=true
+// and a running cluster.
 func TestCacheMiddleware_CacheHitAndCacheMiss_RealK8s(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != strconv.FormatBool(istrue) {
-		t.Skip("skipping integration test")
-	}
-
 	if os.Getenv("HEADLAMP_RUN_CLUSTER_TESTS") != "true" {
 		t.Skip("skipping test requiring a running Kubernetes cluster")
 	}
@@ -4748,15 +4740,11 @@ func TestCacheMiddleware_CacheHitAndCacheMiss_RealK8s(t *testing.T) {
 
 // TestCacheMiddleware_CacheInvalidation_RealK8s tests cache invalidation with a
 // real Kubernetes API server. Creates a ConfigMap, invalidates via DELETE, then
-// verifies the next GET fetches fresh data. Requires HEADLAMP_RUN_INTEGRATION_TESTS=true
-// and HEADLAMP_RUN_CLUSTER_TESTS=true with a running cluster.
+// verifies the next GET fetches fresh data. Requires HEADLAMP_RUN_CLUSTER_TESTS=true
+// and a running cluster.
 //
 //nolint:funlen // Integration test requires setup, requests, and assertions in one function
 func TestCacheMiddleware_CacheInvalidation_RealK8s(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != strconv.FormatBool(istrue) {
-		t.Skip("skipping integration test")
-	}
-
 	if os.Getenv("HEADLAMP_RUN_CLUSTER_TESTS") != "true" {
 		t.Skip("skipping test requiring a running Kubernetes cluster")
 	}

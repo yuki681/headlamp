@@ -450,10 +450,6 @@ func createTempKubeconfig(t *testing.T, content string) string {
 }
 
 func TestContext(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != "true" {
-		t.Skip("skipping integration test")
-	}
-
 	if os.Getenv("HEADLAMP_RUN_CLUSTER_TESTS") != "true" {
 		t.Skip("skipping test requiring a running Kubernetes cluster")
 	}

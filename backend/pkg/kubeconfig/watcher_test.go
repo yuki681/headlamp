@@ -36,11 +36,19 @@ import (
 
 //nolint:funlen // Integration test function covering file watcher events across multiple kubeconfigs.
 func TestWatchAndLoadFiles(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != "true" {
-		t.Skip("skipping integration test")
-	}
+	fixtures := []string{"kubeconfig1", "kubeconfig2"}
+	paths := make([]string, 0, len(fixtures))
+	tempDir := t.TempDir()
 
-	paths := []string{"./test_data/kubeconfig1", "./test_data/kubeconfig2"}
+	for _, name := range fixtures {
+		src, err := os.ReadFile(filepath.Join("test_data", name))
+		require.NoError(t, err)
+
+		path := filepath.Join(tempDir, name)
+		//nolint:gosec // Test helper writing a fixture copy into t.TempDir().
+		require.NoError(t, os.WriteFile(path, src, 0o600))
+		paths = append(paths, path)
+	}
 
 	var path string
 	if runtime.GOOS == "windows" {
@@ -52,9 +60,16 @@ func TestWatchAndLoadFiles(t *testing.T) {
 	kubeConfigStore := kubeconfig.NewContextStore()
 
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel() // Ensure the watcher goroutine is stopped when the test ends
+	done := make(chan struct{})
+	t.Cleanup(func() {
+		cancel()
+		<-done
+	})
 
-	go kubeconfig.LoadAndWatchFiles(ctx, kubeConfigStore, path, kubeconfig.KubeConfig, nil)
+	go func() {
+		defer close(done)
+		kubeconfig.LoadAndWatchFiles(ctx, kubeConfigStore, path, kubeconfig.KubeConfig, nil)
+	}()
 
 	// Test adding a context
 	t.Run("Add context", func(t *testing.T) {
@@ -62,7 +77,7 @@ func TestWatchAndLoadFiles(t *testing.T) {
 		time.Sleep(2 * time.Second)
 
 		// Read existing config
-		config, err := clientcmd.LoadFromFile("./test_data/kubeconfig1")
+		config, err := clientcmd.LoadFromFile(paths[0])
 		require.NoError(t, err)
 
 		// Add new context
@@ -72,7 +87,7 @@ func TestWatchAndLoadFiles(t *testing.T) {
 		}
 
 		// Write back to file
-		err = clientcmd.WriteToFile(*config, "./test_data/kubeconfig1")
+		err = clientcmd.WriteToFile(*config, paths[0])
 		require.NoError(t, err)
 
 		// Wait for context to be added
@@ -99,14 +114,14 @@ func TestWatchAndLoadFiles(t *testing.T) {
 		require.NotNil(t, context)
 
 		// Read existing config
-		config, err := clientcmd.LoadFromFile("./test_data/kubeconfig1")
+		config, err := clientcmd.LoadFromFile(paths[0])
 		require.NoError(t, err)
 
 		// Remove context
 		delete(config.Contexts, "random-cluster-4")
 
 		// Write back to file
-		err = clientcmd.WriteToFile(*config, "./test_data/kubeconfig1")
+		err = clientcmd.WriteToFile(*config, paths[0])
 		require.NoError(t, err)
 
 		// Wait for context to be removed
@@ -125,16 +140,6 @@ func TestWatchAndLoadFiles(t *testing.T) {
 		require.True(t, removed, "Context should have been removed")
 	})
 
-	// Cleanup in case test fails
-	defer func() {
-		config, err := clientcmd.LoadFromFile("./test_data/kubeconfig1")
-		if err == nil {
-			delete(config.Contexts, "random-cluster-4")
-
-			err = clientcmd.WriteToFile(*config, "./test_data/kubeconfig1")
-			require.NoError(t, err)
-		}
-	}()
 }
 
 // TestWatchFileRemovalRemovesContexts verifies that deleting a watched kubeconfig
@@ -144,10 +149,6 @@ func TestWatchAndLoadFiles(t *testing.T) {
 //
 //nolint:funlen // Integration test covering the full watch -> remove -> sync flow.
 func TestWatchFileRemovalRemovesContexts(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != "true" {
-		t.Skip("skipping integration test")
-	}
-
 	src, err := os.ReadFile("./test_data/kubeconfig1")
 	require.NoError(t, err)
 
