@@ -114,6 +114,8 @@ func TestContextStoreListeners(t *testing.T) {
 	// Test notification on AddContextWithKeyAndTTL
 	err = store.AddContextWithKeyAndTTL(&kubeconfig.Context{Name: "test-listener-2"}, "test-listener-2", 10*time.Second)
 	require.NoError(t, err)
+	// Prevent expiry from invoking the panicking listener during a later test.
+	t.Cleanup(func() { require.NoError(t, store.RemoveContext("test-listener-2")) })
 	require.Equal(t, 3, count)
 
 	// Add a listener that panics
