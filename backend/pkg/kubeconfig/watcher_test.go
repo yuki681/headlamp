@@ -41,6 +41,7 @@ func TestWatchAndLoadFiles(t *testing.T) {
 	tempDir := t.TempDir()
 
 	for _, name := range fixtures {
+		//nolint:gosec // Fixture names are fixed test data, not user input.
 		src, err := os.ReadFile(filepath.Join("test_data", name))
 		require.NoError(t, err)
 
@@ -61,6 +62,7 @@ func TestWatchAndLoadFiles(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
+
 	t.Cleanup(func() {
 		cancel()
 		<-done
@@ -68,6 +70,7 @@ func TestWatchAndLoadFiles(t *testing.T) {
 
 	go func() {
 		defer close(done)
+
 		kubeconfig.LoadAndWatchFiles(ctx, kubeConfigStore, path, kubeconfig.KubeConfig, nil)
 	}()
 
@@ -139,7 +142,6 @@ func TestWatchAndLoadFiles(t *testing.T) {
 
 		require.True(t, removed, "Context should have been removed")
 	})
-
 }
 
 // TestWatchFileRemovalRemovesContexts verifies that deleting a watched kubeconfig

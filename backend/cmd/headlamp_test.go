@@ -4439,8 +4439,6 @@ func addBackendTokenHeader(req *http.Request) {
 	}
 }
 
-const istrue = true
-
 func TestCacheMiddleware_BypassesNonKubernetesAPIPaths(t *testing.T) {
 	fakeK8s := newFakeK8sServer(t, true)
 
