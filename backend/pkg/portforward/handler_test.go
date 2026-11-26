@@ -60,6 +60,10 @@ func TestStartPortForward(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
+	if os.Getenv("HEADLAMP_RUN_CLUSTER_TESTS") != "true" {
+		t.Skip("skipping test requiring a running Kubernetes cluster")
+	}
+
 	ch := cache.New[interface{}]()
 
 	t.Cleanup(func() { assert.NoError(t, ch.Close()) })

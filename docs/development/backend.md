@@ -284,12 +284,19 @@ These tests use the production request handler and real HTTP/TLS connections to 
 local mock of the Kubernetes authentication API. Session-control tests use
 synthetic channels and do not establish live Kubernetes port-forwards.
 
-CI also enables the live Minikube lifecycle test. With a running `minikube`
+`HEADLAMP_RUN_INTEGRATION_TESTS=true` enables backend integration tests. Tests
+that connect to a real Kubernetes cluster additionally require
+`HEADLAMP_RUN_CLUSTER_TESTS=true`. Linux CI enables both flags; Windows CI enables
+only integration tests that do not require a cluster. When
+`HEADLAMP_RUN_INTEGRATION_TESTS` is unset, these integration tests are skipped.
+
+Linux CI also enables the live Minikube lifecycle test. With a running `minikube`
 context and a Headlamp pod exposing its backend port in the `headlamp` namespace:
 
 ```bash
 cd backend
-HEADLAMP_RUN_INTEGRATION_TESTS=true go test -race ./pkg/portforward -run '^TestStartPortForward$' -count=1
+HEADLAMP_RUN_INTEGRATION_TESTS=true HEADLAMP_RUN_CLUSTER_TESTS=true \
+  go test -race ./pkg/portforward -run '^TestStartPortForward$' -count=1
 ```
 
 This test creates a real forward and uses the authenticated request handler to

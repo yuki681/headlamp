@@ -454,6 +454,10 @@ func TestContext(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
+	if os.Getenv("HEADLAMP_RUN_CLUSTER_TESTS") != "true" {
+		t.Skip("skipping test requiring a running Kubernetes cluster")
+	}
+
 	kubeConfigFile, err := config.GetDefaultKubeConfigPath()
 	if err != nil {
 		t.Skipf("Skipping test: failed to resolve default kubeconfig path: %v", err)

@@ -58,6 +58,10 @@ func GetClient(t *testing.T, clusterName string) clientcmd.ClientConfig {
 		t.Skip("skipping integration test")
 	}
 
+	if os.Getenv("HEADLAMP_RUN_CLUSTER_TESTS") != "true" {
+		t.Skip("skipping test requiring a running Kubernetes cluster")
+	}
+
 	kubeConfigPath := GetDefaultKubeConfigPath(t)
 
 	config, err := clientcmd.LoadFromFile(kubeConfigPath)
@@ -115,13 +119,13 @@ func pingStatusTillSuccess(t *testing.T, action, releaseName string, cache cache
 }
 
 func TestInstallRelease(t *testing.T) {
+	k8sClientConfig := GetClient(t, "minikube")
 	helmHandler := newHelmHandler(t)
 
 	// add headlmap repo
 	testAddRepo(t, helmHandler, "headlamp_test_repo", "https://kubernetes-sigs.github.io/headlamp/")
 
 	// uninstall release if it already exists
-	k8sClientConfig := GetClient(t, "minikube")
 	actionConfig, err := helm.NewActionConfig(k8sClientConfig, "default")
 	require.NoError(t, err)
 
